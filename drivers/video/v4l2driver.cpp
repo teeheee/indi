@@ -1427,8 +1427,6 @@ void V4L2_Driver::newFrame()
         return;
     }
 
-    if ( PrimaryCCD.isExposing() )
-    {
         non_capture_frames = 0;
         if( !is_capturing )
         {
@@ -1442,11 +1440,13 @@ void V4L2_Driver::newFrame()
         float cfd = (float) capture_frame_dif.tv_sec + (float) capture_frame_dif.tv_usec / 1000000.0f;
         float fd = (float) frame_duration.tv_sec + (float) frame_duration.tv_usec / 1000000.0f;
 
-        if( cfd < fd * 0.9 )
+        if( cfd < fd * 0.9)
         {
             LOGF_DEBUG("Skip early frame cfd = %ld.%06ld seconds.", capture_frame_dif.tv_sec, capture_frame_dif.tv_usec);
             return;
         }
+
+        LOGF_DEBUG("cfd=%f",cfd);
 
         timeradd(&elapsed_exposure, &frame_duration, &elapsed_exposure);
 
@@ -1605,6 +1605,7 @@ void V4L2_Driver::newFrame()
             // Binning not supported in color images for now
             std::unique_lock<std::mutex> guard(ccdBufferLock);
             unsigned char * src  = v4l_base->getRGBBuffer();
+            LOG_DEBUG("test");
             unsigned char * dest = PrimaryCCD.getFrameBuffer();
             // We have RGB RGB RGB data but for FITS file we need each color in separate plane. i.e. RRR GGG BBB ..etc
             unsigned char * red   = dest;
@@ -1649,20 +1650,6 @@ void V4L2_Driver::newFrame()
                           current_exposure.tv_usec);
             ExposureComplete(&PrimaryCCD);
         }
-    }
-    else
-    {
-        non_capture_frames++;
-
-        if( non_capture_frames > 10 )
-        {
-            /* If we arrive here, PrimaryCCD is not exposing anymore, we can't forward the frame and we can't be aborted neither, thus abort the exposure right now.
-            * That issue can be reproduced when clicking the "Set" button on the "Main Control" tab while an exposure is running.
-            * Note that the patch in StartExposure returning busy instead of error prevents the flow from coming here, so now it's only a safeguard. */
-            IDLog("%s: frame received while not exposing, force-aborting capture\n", __FUNCTION__);
-            AbortExposure();
-        }
-    }
 }
 
 bool V4L2_Driver::AbortExposure()

@@ -521,10 +521,14 @@ bool Lx::startLxSerial()
             eol = getSerialEOL();
             tty_connect(LxPortT[0].text, speed, wordsize, parity, stops, &serialfd);
             if (serialfd < 0)
+            {
+                DEBUGFDEVICE("serial",INDI::Logger::DBG_WARNING,"could not connect serial port %s",LxPortT[0].text);
                 return false;
+            }
 
             ret = write(serialfd, LxStartStopCmdT[0].text, strlen(LxStartStopCmdT[0].text));
             ret = write(serialfd, eol, strlen(eol));
+            tty_disconnect(serialfd);
             break;
     }
     return true;
@@ -532,6 +536,7 @@ bool Lx::startLxSerial()
 
 int Lx::stopLxSerial()
 {
+    unsigned int speed = 0, wordsize = 0, parity = 0, stops = 0;
     int ret = 0;
     const char *eol = nullptr;
     unsigned int index = IUFindOnSwitchIndex(&LxSerialOptionSP);
@@ -551,9 +556,18 @@ int Lx::stopLxSerial()
                 setRTS(serialfd, 1);
             break;
         case 2:
+            getSerialOptions(&speed, &wordsize, &parity, &stops);
+            eol = getSerialEOL();
+            tty_connect(LxPortT[0].text, speed, wordsize, parity, stops, &serialfd);
+            if (serialfd < 0)
+            {
+                DEBUGFDEVICE("serial",INDI::Logger::DBG_WARNING,"could not connect serial port %s",LxPortT[0].text);
+                return false;
+            }
             ret = write(serialfd, LxStartStopCmdT[1].text, strlen(LxStartStopCmdT[1].text));
             eol = getSerialEOL();
             ret = write(serialfd, eol, strlen(eol));
+            tty_disconnect(serialfd);
             break;
     }
     close(serialfd);

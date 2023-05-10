@@ -407,8 +407,124 @@ bool LX200_OnStep::updateProperties()
         defineProperty(&SetHomeSP);
 
         // Guide
+        if(OnStepMountVersion == OSV_UNKNOWN)
+        {
+            LOG_INFO("Onstep Version not known, create only single focuser");
+            std::unique_ptr<LX200_OnStep_Focuser> focuser(new LX200_OnStep_Focuser(PortFD, 0));
+            focuser_list.push_front(std::move(focuser));
+        }
+        else if(OnStepMountVersion == OSV_OnStepX)
+        {
+            LOG_INFO("Version is OnStepX");
+            for (int i = 0; i < 9; i++)
+            {
+                char cmd[CMD_MAX_LEN] = {0};
+                char read_buffer[RB_MAX_LEN] = {0};
+                snprintf(cmd, sizeof(cmd), ":F%dA#", i + 1);
+                int fail_or_error = getCommandSingleCharResponse(PortFD, read_buffer, cmd); 
+                if (!fail_or_error && read_buffer[0] == '1')  // Do we have a Focuser X
+                {
+                    LOGF_INFO("Focuser %i Found", i);
+                    std::unique_ptr<LX200_OnStep_Focuser> focuser(new LX200_OnStep_Focuser(PortFD, i));
+                    focuser_list.push_front(std::move(focuser));
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        else //OSV_OnStepV1or2, OSV_OnStepV3, OSV_OnStepV4, OSV_OnStepV5
+        {
+            std::unique_ptr<LX200_OnStep_Focuser> focuser(new LX200_OnStep_Focuser(PortFD, 0));
+            focuser_list.push_front(std::move(focuser));
+        }
 
-        
+        // Focuser
+
+
+
+        //---------------old code-------------
+        // Focuser 1
+      /*  OSNumFocusers = 0; //Reset before detection
+        //if (!sendOnStepCommand(":FA#"))  // do we have a Focuser 1
+        char response[RB_MAX_LEN] = {0};
+        int error_or_fail = getCommandSingleCharResponse(PortFD, response, ":FA#"); //0 = failure, 1 = success, no # on reply
+        if (error_or_fail > 0 && response[0] == '1')
+        {
+            LOG_INFO("Focuser 1 found");
+            OSFocuser1 = true;
+            defineProperty(&OSFocus1InitializeSP);
+            // Focus T° Compensation
+            defineProperty(&FocuserTNP);
+            defineProperty(&TFCCompensationSP);
+            defineProperty(&TFCCoefficientNP);
+            defineProperty(&TFCDeadbandNP);
+            // End Focus T° Compensation
+            OSNumFocusers = 1;
+        }
+        else
+        {
+            OSFocuser1 = false;
+            LOG_INFO("Focuser 1 NOT found");
+            LOGF_DEBUG("error_or_fail = %u, response = %c", error_or_fail, response[0]);
+        }
+        // Focuser 2
+        if (!sendOnStepCommand(":fA#"))  // Do we have a Focuser 2 (:fA# will only work for OnStep, not OnStepX)
+        {
+            LOG_INFO("Focuser 2 found");
+            OSFocuser2 = true;
+            OSNumFocusers = 2;
+            //defineProperty(&OSFocus2SelSP);
+            defineProperty(&OSFocus2MotionSP);
+            defineProperty(&OSFocus2RateSP);
+            defineProperty(&OSFocus2TargNP);
+            IUFillSwitchVector(&OSFocusSelectSP, OSFocusSelectS, OSNumFocusers, getDeviceName(), "OSFocusSWAP", "Primary Focuser",
+                               FOCUS_TAB,
+                               IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
+            defineProperty(&OSFocusSelectSP); //Swap focusers (only matters if two focusers)
+        }
+        else     //For OnStepX, up to 6 focusers
+        {
+            LOG_INFO("Focuser 2 NOT found");
+            OSFocuser2 = false;
+            if (OnStepMountVersion == OSV_UNKNOWN || OnStepMountVersion == OSV_OnStepX)
+            {
+                LOG_INFO("Version unknown or OnStepX (Checking for OnStepX Focusers)");
+                for (int i = 0; i < 9; i++)
+                {
+                    char cmd[CMD_MAX_LEN] = {0};
+                    char read_buffer[RB_MAX_LEN] = {0};
+                    snprintf(cmd, sizeof(cmd), ":F%dA#", i + 1);
+                    int fail_or_error = getCommandSingleCharResponse(PortFD, read_buffer,
+                                        cmd); //0 = failure, 1 = success, 0 on all prior to OnStepX no # on reply
+                    if (!fail_or_error && read_buffer[0] == '1')  // Do we have a Focuser X
+                    {
+                        LOGF_INFO("Focuser %i Found", i);
+                        OSNumFocusers = i + 1;
+                    }
+                    else
+                    {
+                        if(fail_or_error < 0)
+                        {
+                            //Non detection = 0, Read errors < 0, stop
+                            LOGF_INFO("Function call failed in a way that says OnStep doesn't have this setup, stopping Focuser probing, return: %i",
+                                      fail_or_error);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (OSNumFocusers > 1)
+            {
+                IUFillSwitchVector(&OSFocusSelectSP, OSFocusSelectS, OSNumFocusers, getDeviceName(), "OSFocusSWAP", "Primary Focuser",
+                                   FOCUS_TAB,
+                                   IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
+                defineProperty(&OSFocusSelectSP);
+            }
+        }
+*/
+        //---------------old code-------------
 
         //Rotation Information
         char rotator_response[RB_MAX_LEN] = {0};

@@ -131,6 +131,7 @@
 #pragma once
 
 #include "lx200generic.h"
+#include "lx200_OnStep_focuser.h"
 #include "lx200driver.h"
 #include "indicom.h"
 #include "indifocuserinterface.h"
@@ -143,6 +144,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <stdlib.h>
+#include <list>
 
 #define RB_MAX_LEN 64
 #define CMD_MAX_LEN 32
@@ -405,6 +407,9 @@ class LX200_OnStep : public LX200Generic, public INDI::WeatherInterface, public 
         bool OSSupports_bitfield_Gu = false;
         uint8_t PECStatusGU = 0;
         uint8_t ParkStatusGU = 0;
+
+        //Focuser support
+        std::list<std::unique_ptr<LX200_OnStep_Focuser>> focuser_list;
 
         // Weather support
         // NOTE: Much is handled by WeatherInterface, these controls are mainly for setting values which are not detected

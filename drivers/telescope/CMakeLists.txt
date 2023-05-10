@@ -51,6 +51,22 @@ install(TARGETS indi_lx200_TeenAstro RUNTIME DESTINATION bin)
 
 # ################################################################################
 
+# ########## LX200 OnStepX #############
+add_executable(indi_lx200_OnStepX
+    lx200telescope.cpp
+    lx200driver.cpp
+    lx200_OnStepX.cpp
+    lx200_OnStepX_focuser.cpp
+    lx200_OnStepX_rotator.cpp
+    lx200_OnStepX_serial.cpp)
+
+target_compile_definitions(indi_lx200_OnStepX PRIVATE _XOPEN_SOURCE=700)
+target_link_libraries(indi_lx200_OnStepX indidriver)
+
+install(TARGETS indi_lx200_OnStepX RUNTIME DESTINATION bin)
+
+# ################################################################################
+
 # ########## LX200 Generic ###########
 add_executable(indi_lx200generic
     lx200driver.cpp
@@ -77,6 +93,7 @@ add_executable(indi_lx200generic
     lx200_10micron.cpp
     ioptronHC8406.cpp
     eq500x.cpp)
+
 
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
     target_compile_definitions(indi_lx200generic PRIVATE -D_XOPEN_SOURCE=700)

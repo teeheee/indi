@@ -58,16 +58,6 @@ LX200_OnStep::LX200_OnStep() : LX200Generic(), WI(this), RotatorInterface(this)
     SetTelescopeCapability(GetTelescopeCapability() | TELESCOPE_CAN_CONTROL_TRACK                         |
                            TELESCOPE_HAS_TRACK_RATE, 10 );
 
-    //CAN_ABORT, CAN_GOTO ,CAN_PARK ,CAN_SYNC ,HAS_LOCATION ,HAS_TIME ,HAS_TRACK_MODE Already inherited from lx200generic,
-    // 4 stands for the number of Slewrate Buttons as defined in Inditelescope.cpp
-    //setLX200Capability(LX200_HAS_FOCUS | LX200_HAS_TRACKING_FREQ | LX200_HAS_ALIGNMENT_TYPE | LX200_HAS_SITES | LX200_HAS_PULSE_GUIDING);
-    //
-    // Get generic capabilities but discard the followng:
-    // LX200_HAS_FOCUS
-
-
-    FI::SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_ABORT);
-    // Unused option: FOCUSER_HAS_VARIABLE_SPEED
 
     RI::SetCapability(ROTATOR_CAN_ABORT | ROTATOR_CAN_HOME | ROTATOR_HAS_BACKLASH);
     //     /*{
@@ -89,21 +79,9 @@ bool LX200_OnStep::initProperties()
 {
 
     LX200Generic::initProperties();
-    FI::initProperties(FOCUS_TAB);
     WI::initProperties(ENVIRONMENT_TAB, ENVIRONMENT_TAB);
     RI::initProperties(ROTATOR_TAB);
     SetParkDataType(PARK_RA_DEC);
-
-    //FocuserInterface
-    //Initial, these will be updated later.
-    FocusRelPosN[0].min   = 0.;
-    FocusRelPosN[0].max   = 30000.;
-    FocusRelPosN[0].value = 0;
-    FocusRelPosN[0].step  = 10;
-    FocusAbsPosN[0].min   = 0.;
-    FocusAbsPosN[0].max   = 60000.;
-    FocusAbsPosN[0].value = 0;
-    FocusAbsPosN[0].step  = 10;
 
 
     // ============== MAIN_CONTROL_TAB
@@ -208,67 +186,6 @@ bool LX200_OnStep::initProperties()
                        IPS_IDLE);
 
     // ============== GUIDE_TAB
-
-    // ============== FOCUS_TAB
-    // Focuser 1
-
-    IUFillSwitch(&OSFocus1InitializeS[0], "Focus1_0", "Zero", ISS_OFF);
-    IUFillSwitch(&OSFocus1InitializeS[1], "Focus1_2", "Mid", ISS_OFF);
-    //     IUFillSwitch(&OSFocus1InitializeS[2], "Focus1_3", "max", ISS_OFF);
-    IUFillSwitchVector(&OSFocus1InitializeSP, OSFocus1InitializeS, 2, getDeviceName(), "Foc1Rate", "Initialize", FOCUS_TAB,
-                       IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
-    // Focus T° Compensation
-    IUFillNumber(&FocuserTN[0], "TFC T°", "TFC T°", "%+2.2f", 0, 1, 0.25, 25);  //default value is meaningless
-    IUFillNumber(&FocuserTN[1], "TFC Diff T°", "TFC Diff T°", "%+2.2f", 0, 1, 0.25, 25);  //default value is meaningless
-    IUFillNumberVector(&FocuserTNP, FocuserTN, 2, getDeviceName(), "TFC T°", "TFC T°", FOCUS_TAB, IP_RO, 0,
-                       IPS_IDLE);
-    IUFillSwitch(&TFCCompensationS[0], "Off", "Compensation: OFF", ISS_OFF);
-    IUFillSwitch(&TFCCompensationS[1], "On", "Compensation: ON", ISS_OFF);
-    IUFillSwitchVector(&TFCCompensationSP, TFCCompensationS, 2, getDeviceName(), "Compensation T°", "Temperature Compensation", FOCUS_TAB, IP_RW,
-                       ISR_1OFMANY, 0, IPS_IDLE);
-    IUFillNumber(&TFCCoefficientN[0], "TFC Coeeficient", "TFC Coefficient µm/°C", "%+03.5f", -999.99999, 999.99999, 1, 100);
-    IUFillNumberVector(&TFCCoefficientNP, TFCCoefficientN, 1, getDeviceName(), "TFC Coeeficient", "", FOCUS_TAB, IP_RW, 0, IPS_IDLE);
-    IUFillNumber(&TFCDeadbandN[0], "TFC Deadband", "TFC Deadband µm", "%g", 1, 32767, 1, 5);
-    IUFillNumberVector(&TFCDeadbandNP, TFCDeadbandN, 1, getDeviceName(), "TFC Deadband", "", FOCUS_TAB, IP_RW, 0, IPS_IDLE);
-    // End Focus T° Compensation
-    
-    IUFillSwitch(&OSFocusSelectS[0], "Focuser_Primary_1", "Focuser 1", ISS_ON);
-    IUFillSwitch(&OSFocusSelectS[1], "Focuser_Primary_2", "Focuser 2/Swap", ISS_OFF);
-    // For when OnStepX comes out
-    IUFillSwitch(&OSFocusSelectS[2], "Focuser_Primary_3", "3", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[3], "Focuser_Primary_4", "4", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[4], "Focuser_Primary_5", "5", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[5], "Focuser_Primary_6", "6", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[6], "Focuser_Primary_7", "7", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[7], "Focuser_Primary_8", "8", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[8], "Focuser_Primary_9", "9", ISS_OFF);
-    IUFillSwitch(&OSFocusSelectS[9], "Focuser_Primary_10", "10", ISS_OFF);
-
-    IUFillSwitchVector(&OSFocusSelectSP, OSFocusSelectS, 1, getDeviceName(), "OSFocusSWAP", "Primary Focuser", FOCUS_TAB,
-                       IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
-
-
-    // Focuser 2
-    //IUFillSwitch(&OSFocus2SelS[0], "Focus2_Sel1", "Foc 1", ISS_OFF);
-    //IUFillSwitch(&OSFocus2SelS[1], "Focus2_Sel2", "Foc 2", ISS_OFF);
-    //IUFillSwitchVector(&OSFocus2SelSP, OSFocus2SelS, 2, getDeviceName(), "Foc2Sel", "Foc 2", FOCUS_TAB, IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
-
-    IUFillSwitch(&OSFocus2MotionS[0], "Focus2_In", "In", ISS_OFF);
-    IUFillSwitch(&OSFocus2MotionS[1], "Focus2_Out", "Out", ISS_OFF);
-    IUFillSwitch(&OSFocus2MotionS[2], "Focus2_Stop", "Stop", ISS_OFF);
-    IUFillSwitchVector(&OSFocus2MotionSP, OSFocus2MotionS, 3, getDeviceName(), "Foc2Mot", "Foc 2 Motion", FOCUS_TAB, IP_RW,
-                       ISR_ATMOST1, 0, IPS_IDLE);
-
-    IUFillSwitch(&OSFocus2RateS[0], "Focus2_1", "min", ISS_OFF);
-    IUFillSwitch(&OSFocus2RateS[1], "Focus2_2", "0.01", ISS_OFF);
-    IUFillSwitch(&OSFocus2RateS[2], "Focus2_3", "0.1", ISS_OFF);
-    IUFillSwitch(&OSFocus2RateS[3], "Focus2_4", "1", ISS_OFF);
-    IUFillSwitchVector(&OSFocus2RateSP, OSFocus2RateS, 4, getDeviceName(), "Foc2Rate", "Foc 2 Rates", FOCUS_TAB, IP_RW,
-                       ISR_ATMOST1, 0, IPS_IDLE);
-
-    IUFillNumber(&OSFocus2TargN[0], "FocusTarget2", "Abs Pos", "%g", -25000, 25000, 1, 0);
-    IUFillNumberVector(&OSFocus2TargNP, OSFocus2TargN, 1, getDeviceName(), "Foc2Targ", "Foc 2 Target", FOCUS_TAB, IP_RW, 0,
-                       IPS_IDLE);
 
     // =========== ROTATOR TAB
 
@@ -426,7 +343,7 @@ bool LX200_OnStep::initProperties()
     addAuxControls();
 
 
-    setDriverInterface(getDriverInterface() | FOCUSER_INTERFACE | WEATHER_INTERFACE);
+    setDriverInterface(getDriverInterface() | WEATHER_INTERFACE);
 
     return true;
 }
@@ -491,102 +408,11 @@ bool LX200_OnStep::updateProperties()
 
         // Guide
 
-        // Focuser
-
-        // Focuser 1
-        OSNumFocusers = 0; //Reset before detection
-        //if (!sendOnStepCommand(":FA#"))  // do we have a Focuser 1
-        char response[RB_MAX_LEN] = {0};
-        int error_or_fail = getCommandSingleCharResponse(PortFD, response, ":FA#"); //0 = failure, 1 = success, no # on reply
-        if (error_or_fail > 0 && response[0] == '1')
-        {
-            LOG_INFO("Focuser 1 found");
-            OSFocuser1 = true;
-            defineProperty(&OSFocus1InitializeSP);
-            // Focus T° Compensation
-            defineProperty(&FocuserTNP);
-            defineProperty(&TFCCompensationSP);
-            defineProperty(&TFCCoefficientNP);
-            defineProperty(&TFCDeadbandNP);
-            // End Focus T° Compensation
-            OSNumFocusers = 1;
-        }
-        else
-        {
-            OSFocuser1 = false;
-            LOG_INFO("Focuser 1 NOT found");
-            LOGF_DEBUG("error_or_fail = %u, response = %c", error_or_fail, response[0]);
-        }
-        // Focuser 2
-        if (!sendOnStepCommand(":fA#"))  // Do we have a Focuser 2 (:fA# will only work for OnStep, not OnStepX)
-        {
-            LOG_INFO("Focuser 2 found");
-            OSFocuser2 = true;
-            OSNumFocusers = 2;
-            //defineProperty(&OSFocus2SelSP);
-            defineProperty(&OSFocus2MotionSP);
-            defineProperty(&OSFocus2RateSP);
-            defineProperty(&OSFocus2TargNP);
-            IUFillSwitchVector(&OSFocusSelectSP, OSFocusSelectS, OSNumFocusers, getDeviceName(), "OSFocusSWAP", "Primary Focuser",
-                               FOCUS_TAB,
-                               IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
-            defineProperty(&OSFocusSelectSP); //Swap focusers (only matters if two focusers)
-        }
-        else     //For OnStepX, up to 6 focusers
-        {
-            LOG_INFO("Focuser 2 NOT found");
-            OSFocuser2 = false;
-            if (OnStepMountVersion == OSV_UNKNOWN || OnStepMountVersion == OSV_OnStepX)
-            {
-                LOG_INFO("Version unknown or OnStepX (Checking for OnStepX Focusers)");
-                for (int i = 0; i < 9; i++)
-                {
-                    char cmd[CMD_MAX_LEN] = {0};
-                    char read_buffer[RB_MAX_LEN] = {0};
-                    snprintf(cmd, sizeof(cmd), ":F%dA#", i + 1);
-                    int fail_or_error = getCommandSingleCharResponse(PortFD, read_buffer,
-                                        cmd); //0 = failure, 1 = success, 0 on all prior to OnStepX no # on reply
-                    if (!fail_or_error && read_buffer[0] == '1')  // Do we have a Focuser X
-                    {
-                        LOGF_INFO("Focuser %i Found", i);
-                        OSNumFocusers = i + 1;
-                    }
-                    else
-                    {
-                        if(fail_or_error < 0)
-                        {
-                            //Non detection = 0, Read errors < 0, stop
-                            LOGF_INFO("Function call failed in a way that says OnStep doesn't have this setup, stopping Focuser probing, return: %i",
-                                      fail_or_error);
-                            break;
-                        }
-                    }
-                }
-            }
-            if (OSNumFocusers > 1)
-            {
-                IUFillSwitchVector(&OSFocusSelectSP, OSFocusSelectS, OSNumFocusers, getDeviceName(), "OSFocusSWAP", "Primary Focuser",
-                                   FOCUS_TAB,
-                                   IP_RW, ISR_ATMOST1, 0, IPS_IDLE);
-                defineProperty(&OSFocusSelectSP);
-            }
-        }
-        if (OSNumFocusers == 0)
-        {
-            LOG_INFO("No Focusers found");
-        }
-        else
-        {
-            LOG_INFO("At least one focuser found, showing interface");
-            FI::updateProperties();
-        }
-
-        LOG_DEBUG("Focusers checked Variables:");
-        LOGF_DEBUG("OSFocuser1: %d, OSFocuser2: %d, OSNumFocusers: %i", OSFocuser1, OSFocuser2, OSNumFocusers);
+        
 
         //Rotation Information
         char rotator_response[RB_MAX_LEN] = {0};
-        error_or_fail = getCommandSingleCharErrorOrLongResponse(PortFD, rotator_response, ":GX98#");
+        int error_or_fail = getCommandSingleCharErrorOrLongResponse(PortFD, rotator_response, ":GX98#");
         if (error_or_fail > 0)
         {
             if (rotator_response[0] == 'D' || rotator_response[0] == 'R')
@@ -713,22 +539,6 @@ bool LX200_OnStep::updateProperties()
         deleteProperty(SetHomeSP.name);
         // Guide
 
-        // Focuser
-        // Focuser 1
-        deleteProperty(FocuserTNP.name);
-        deleteProperty(OSFocus1InitializeSP.name);
-        deleteProperty(TFCCoefficientNP.name);
-        deleteProperty(TFCDeadbandNP.name);
-        // Focus T° Compensation
-        deleteProperty(TFCCompensationSP.name);
-        // End Focus T° Compensation
-
-        // Focuser 2
-        //deleteProperty(OSFocus2SelSP.name);
-        deleteProperty(OSFocus2MotionSP.name);
-        deleteProperty(OSFocus2RateSP.name);
-        deleteProperty(OSFocus2TargNP.name);
-        deleteProperty(OSFocusSelectSP.name);
 
         // Rotator
         deleteProperty(OSRotatorDerotateSP.name);
@@ -780,8 +590,6 @@ bool LX200_OnStep::ISNewNumber(const char *dev, const char *name, double values[
 {
     if (dev != nullptr && strcmp(dev, getDeviceName()) == 0)
     {
-        if (strstr(name, "FOCUS_"))
-            return FI::processNumber(dev, name, values, names, n);
         if (strstr(name, "ROTATOR_"))
             return RI::processNumber(dev, name, values, names, n);
 
@@ -1069,29 +877,7 @@ bool LX200_OnStep::ISNewNumber(const char *dev, const char *name, double values[
             return false;
         }
     }
-    // Focuser
-    // Focuser 1 Now handled by Focusr Interface
 
-    // Focuser 2 Target
-    if (!strcmp(name, OSFocus2TargNP.name))
-    {
-        char cmd[CMD_MAX_LEN] = {0};
-
-        if ((values[0] >= -25000) && (values[0] <= 25000))
-        {
-            snprintf(cmd, 15, ":fR%d#", (int)values[0]);
-            sendOnStepCommandBlind(cmd);
-            OSFocus2TargNP.s           = IPS_OK;
-            IDSetNumber(&OSFocus2TargNP, "Focuser 2 position (relative) moved by %d", (int)values[0]);
-            OSUpdateFocuser();
-        }
-        else
-        {
-            OSFocus2TargNP.s = IPS_ALERT;
-            IDSetNumber(&OSFocus2TargNP, "Setting Max Slew Rate Failed");
-        }
-        return true;
-    }
 
     if (!strcmp(name, OutputPorts_NP.name))
     {
@@ -1185,51 +971,6 @@ bool LX200_OnStep::ISNewNumber(const char *dev, const char *name, double values[
         return true;
     }
     
-    // Focus T° Compensation
-    if (!strcmp(name, TFCCoefficientNP.name))
-    {
-        // :FC[sn.n]# Set focuser temperature compensation coefficient in µ/°C
-        char cmd[CMD_MAX_LEN] = {0};
-
-        if (abs(values[0]) < 1000)    //Range is -999.999 .. + 999.999
-        {
-            snprintf(cmd, 15, ":FC%+3.5f#", values[0]);
-            sendOnStepCommandBlind(cmd);
-            TFCCoefficientNP.s           = IPS_OK;
-            IDSetNumber(&TFCCoefficientNP, "TFC Coeeficient set to %+3.5f", values[0]);
-        }
-        else
-        {
-            TFCCoefficientNP.s = IPS_ALERT;
-            IDSetNumber(&TFCCoefficientNP, "Setting TFC Coefficient Failed");
-        }
-        return true;
-    }
-    
-    if (!strcmp(name, TFCDeadbandNP.name))
-    {
-        // :FD[n]#    Set focuser temperature compensation deadband amount (in steps or microns)
-        char cmd[CMD_MAX_LEN] = {0};
-
-        if ((values[0] >= 1) && (values[0] <= 32768))   //Range is 1 .. 32767
-        {
-            snprintf(cmd, 15, ":FD%d#", (int)values[0]);
-            sendOnStepCommandBlind(cmd);
-            TFCDeadbandNP.s = IPS_OK;
-            IDSetNumber(&TFCDeadbandNP, "TFC Deadbandset to %d", (int)values[0]);
-        }
-        else
-        {
-            TFCDeadbandNP.s = IPS_ALERT;
-            IDSetNumber(&TFCDeadbandNP, "Setting TFC Deadband Failed");
-        }
-        return true;
-    }
-    
-
-    
-    // end Focus T° Compensation    
-
     if (strstr(name, "WEATHER_"))
     {
         return WI::processNumber(dev, name, values, names, n);
@@ -1583,120 +1324,6 @@ bool LX200_OnStep::ISNewSwitch(const char *dev, const char *name, ISState *state
         }
 
 
-        // Focuser
-        // Focuser 1 Rates
-        if (!strcmp(name, OSFocus1InitializeSP.name))
-        {
-            char cmd[CMD_MAX_LEN] = {0};
-            if (IUUpdateSwitch(&OSFocus1InitializeSP, states, names, n) < 0)
-                return false;
-            index = IUFindOnSwitchIndex(&OSFocus1InitializeSP);
-            if (index == 0)
-            {
-                snprintf(cmd, 5, ":FZ#");
-                sendOnStepCommandBlind(cmd);
-                OSFocus1InitializeS[index].s = ISS_OFF;
-                OSFocus1InitializeSP.s = IPS_OK;
-                IDSetSwitch(&OSFocus1InitializeSP, nullptr);
-            }
-            if (index == 1)
-            {
-                snprintf(cmd, 5, ":FH#");
-                sendOnStepCommandBlind(cmd);
-                OSFocus1InitializeS[index].s = ISS_OFF;
-                OSFocus1InitializeSP.s = IPS_OK;
-                IDSetSwitch(&OSFocus1InitializeSP, nullptr);
-            }
-        }
-
-
-        //Focuser Swap/Select
-        if (!strcmp(name, OSFocusSelectSP.name))
-        {
-            char cmd[CMD_MAX_LEN] = {0};
-            int i;
-            if (IUUpdateSwitch(&OSFocusSelectSP, states, names, n) < 0)
-                return false;
-            index = IUFindOnSwitchIndex(&OSFocusSelectSP);
-            LOGF_INFO("Primary focuser set: Focuser 1 in INDI/Controllable Focuser = OnStep Focuser %d", index + 1);
-            if (index == 0 && OSNumFocusers <= 2)
-            {
-                LOG_INFO("If using OnStep: Focuser 2 in INDI = OnStep Focuser 2");
-            }
-            if (index == 1 && OSNumFocusers <= 2)
-            {
-                LOG_INFO("If using OnStep: Focuser 2 in INDI = OnStep Focuser 1");
-            }
-            if (OSNumFocusers > 2)
-            {
-                LOGF_INFO("If using OnStepX, There is no swap, and current max number: %d", OSNumFocusers);
-            }
-            snprintf(cmd, 7, ":FA%d#", index + 1 );
-            for (i = 0; i < 9; i++)
-            {
-                OSFocusSelectS[i].s = ISS_OFF;
-            }
-            OSFocusSelectS[index].s = ISS_ON;
-            if (!sendOnStepCommand(cmd))
-            {
-                OSFocusSelectSP.s = IPS_BUSY;
-            }
-            else
-            {
-                OSFocusSelectSP.s = IPS_ALERT;
-            }
-            IDSetSwitch(&OSFocusSelectSP, nullptr);
-        }
-
-
-        // Focuser 2 Rates
-        if (!strcmp(name, OSFocus2RateSP.name))
-        {
-            char cmd[CMD_MAX_LEN] = {0};
-
-            if (IUUpdateSwitch(&OSFocus2RateSP, states, names, n) < 0)
-                return false;
-
-            index = IUFindOnSwitchIndex(&OSFocus2RateSP);
-            snprintf(cmd, 5, ":F%d#", index + 1);
-            sendOnStepCommandBlind(cmd);
-            OSFocus2RateS[index].s = ISS_OFF;
-            OSFocus2RateSP.s = IPS_OK;
-            IDSetSwitch(&OSFocus2RateSP, nullptr);
-        }
-        // Focuser 2 Motion
-        if (!strcmp(name, OSFocus2MotionSP.name))
-        {
-            char cmd[CMD_MAX_LEN] = {0};
-
-            if (IUUpdateSwitch(&OSFocus2MotionSP, states, names, n) < 0)
-                return false;
-
-            index = IUFindOnSwitchIndex(&OSFocus2MotionSP);
-            if (index == 0)
-            {
-                strncpy(cmd, ":f+#", sizeof(cmd));
-            }
-            if (index == 1)
-            {
-                strncpy(cmd, ":f-#", sizeof(cmd));
-            }
-            if (index == 2)
-            {
-                strncpy(cmd, ":fQ#", sizeof(cmd));
-            }
-            sendOnStepCommandBlind(cmd);
-            const struct timespec timeout = {0, 100000000L};
-            nanosleep(&timeout, nullptr); // Pulse 0,1 s
-            if(index != 2)
-            {
-                sendOnStepCommandBlind(":fQ#");
-            }
-            OSFocus2MotionS[index].s = ISS_OFF;
-            OSFocus2MotionSP.s = IPS_OK;
-            IDSetSwitch(&OSFocus2MotionSP, nullptr);
-        }
-
         //Rotator De-rotation
         //         OSRotatorDerotateS
         if (!strcmp(name, OSRotatorDerotateSP.name))
@@ -1889,38 +1516,6 @@ bool LX200_OnStep::ISNewSwitch(const char *dev, const char *name, ISState *state
             }
         }
         
-        // Focus T° Compensation
-        if (!strcmp(name, TFCCompensationSP.name))
-        {
-        // :Fc[n]#    Enable/disable focuser temperature compensation where [n] = 0 or 1
-        //            Return: 0 on failure
-        //                    1 on success
-        char cmd[CMD_MAX_LEN] = {0};
-        int ret = 0;
-            IUUpdateSwitch(&TFCCompensationSP, states, names, n);
-            TFCCompensationSP.s = IPS_OK;
-
-            if (TFCCompensationS[0].s == ISS_ON)
-            {
-                snprintf(cmd, sizeof(cmd), ":Fc0#");
-                ret = sendOnStepCommandBlind(cmd);
-                //TFCCompensationS[0].s = ISS_OFF;
-                IDSetSwitch(&TFCCompensationSP, "Idle");
-            }
-            else
-            {
-                snprintf(cmd, sizeof(cmd), ":Fc1#");
-                ret = sendOnStepCommandBlind(cmd);
-                //TFCCompensationS[1].s = ISS_OFF;
-                IDSetSwitch(&TFCCompensationSP, "Idle");
-            }
-
-            INDI_UNUSED(ret);
-            IUResetSwitch(&TFCCompensationSP);
-            IDSetSwitch(&TFCCompensationSP, nullptr);
-            return true;
-        }
-        //End  Focus T° Compensation
 
 #ifdef ONSTEP_NOTDONE
         if (!strcmp(name, OSOutput1SP.name))      //
@@ -1952,13 +1547,6 @@ bool LX200_OnStep::ISNewSwitch(const char *dev, const char *name, ISState *state
             IDSetSwitch(&OSOutput2SP, nullptr);
         }
 #endif
-
-        // Focuser
-        if (strstr(name, "FOCUS"))
-        {
-            return FI::processSwitch(dev, name, states, names, n);
-        }
-        // Focuser
         if (strstr(name, "ROTATOR"))
         {
             return RI::processSwitch(dev, name, states, names, n);
@@ -3347,12 +2935,6 @@ bool LX200_OnStep::ReadScopeStatus()
     UpdateAlignErr();
 
 
-    if (OSUpdateFocuser() != 0)  // Update Focuser Position
-    {
-        LOG_WARN("Communication error on Focuser Update, this update aborted, will try again...");
-        return true; //COMMUNICATION ERROR, BUT DON'T PUT TELESCOPE IN ERROR STATE
-    }
-
 #ifndef OnStep_Alpha
     if (!OSPECviaGU)
     {
@@ -3761,351 +3343,6 @@ int LX200_OnStep::setSiteLatitude(int fd, double Long)
     return (setStandardProcedure(fd, read_buffer));
 }
 
-
-
-
-/***** FOCUSER INTERFACE ******
-
-NOT USED:
-virtual bool    SetFocuserSpeed (int speed)
-SetFocuserSpeed Set Focuser speed. More...
-
-USED:
-virtual IPState     MoveFocuser (FocusDirection dir, int speed, uint16_t duration)
-MoveFocuser the focuser in a particular direction with a specific speed for a finite duration. More...
-
-USED:
-virtual IPState     MoveAbsFocuser (uint32_t targetTicks)
-MoveFocuser the focuser to an absolute position. More...
-
-USED:
-virtual IPState     MoveRelFocuser (FocusDirection dir, uint32_t ticks)
-MoveFocuser the focuser to an relative position. More...
-
-USED:
-virtual bool    AbortFocuser ()
-AbortFocuser all focus motion. More...
-
-*/
-
-
-IPState LX200_OnStep::MoveFocuser(FocusDirection dir, int speed, uint16_t duration)
-{
-    INDI_UNUSED(speed);
-    //  :FRsnnn#  Set focuser target position relative (in microns)
-    //            Returns: Nothing
-    double output;
-    char read_buffer[32];
-    output = duration;
-    if (dir == FOCUS_INWARD) output = 0 - output;
-    snprintf(read_buffer, sizeof(read_buffer), ":FR%5f#", output);
-    sendOnStepCommandBlind(read_buffer);
-    return IPS_BUSY; // Normal case, should be set to normal by update.
-}
-
-IPState LX200_OnStep::MoveAbsFocuser (uint32_t targetTicks)
-{
-    //  :FSsnnn#  Set focuser target position (in microns)
-    //            Returns: Nothing
-    if (FocusAbsPosN[0].max >= int(targetTicks) && FocusAbsPosN[0].min <= int(targetTicks))
-    {
-        char read_buffer[32];
-        snprintf(read_buffer, sizeof(read_buffer), ":FS%06d#", int(targetTicks));
-        sendOnStepCommandBlind(read_buffer);
-        return IPS_BUSY; // Normal case, should be set to normal by update.
-    }
-    else
-    {
-        LOG_INFO("Unable to move focuser, out of range");
-        return IPS_ALERT;
-    }
-}
-
-IPState LX200_OnStep::MoveRelFocuser (FocusDirection dir, uint32_t ticks)
-{
-    //  :FRsnnn#  Set focuser target position relative (in microns)
-    //            Returns: Nothing
-    int output;
-    char read_buffer[32];
-    output = ticks;
-    if (dir == FOCUS_INWARD) output = 0 - ticks;
-    snprintf(read_buffer, sizeof(read_buffer), ":FR%04d#", output);
-    sendOnStepCommandBlind(read_buffer);
-    return IPS_BUSY; // Normal case, should be set to normal by update.
-}
-
-bool LX200_OnStep::AbortFocuser ()
-{
-    //  :FQ#   Stop the focuser
-    //         Returns: Nothing
-    char cmd[CMD_MAX_LEN] = {0};
-    strncpy(cmd, ":FQ#", sizeof(cmd));
-    return sendOnStepCommandBlind(cmd);
-}
-
-int LX200_OnStep::OSUpdateFocuser()
-{
-
-    //    double current = 0;
-    //     int temp_value;
-    //     int i;
-    if (OSFocuser1)
-    {
-        // Alternate option:
-        //if (!sendOnStepCommand(":FA#")) {
-        char value[RB_MAX_LEN] = {0};
-        int value_int;
-        int error_or_fail = getCommandIntResponse(PortFD, &value_int, value, ":FG#");
-        if (error_or_fail > 1)
-        {
-            FocusAbsPosN[0].value =  value_int;
-            //         double current = FocusAbsPosN[0].value;
-            IDSetNumber(&FocusAbsPosNP, nullptr);
-            LOGF_DEBUG("Current focuser: %d, %f", value_int, FocusAbsPosN[0].value);
-        }
-        //  :FT#  get status
-        //         Returns: M# (for moving) or S# (for stopped)
-        char valueStatus[RB_MAX_LEN] = {0};
-        error_or_fail = getCommandSingleCharErrorOrLongResponse(PortFD, valueStatus, ":FT#");
-        if (error_or_fail > 0 )
-        {
-            if (valueStatus[0] == 'S')
-            {
-                FocusRelPosNP.s = IPS_OK;
-                IDSetNumber(&FocusRelPosNP, nullptr);
-                FocusAbsPosNP.s = IPS_OK;
-                IDSetNumber(&FocusAbsPosNP, nullptr);
-            }
-            else if (valueStatus[0] == 'M')
-            {
-                FocusRelPosNP.s = IPS_BUSY;
-                IDSetNumber(&FocusRelPosNP, nullptr);
-                FocusAbsPosNP.s = IPS_BUSY;
-                IDSetNumber(&FocusAbsPosNP, nullptr);
-            }
-            else
-            {
-                LOG_WARN("Communication :FT# error, check connection.");
-                //INVALID REPLY
-                FocusRelPosNP.s = IPS_ALERT;
-                IDSetNumber(&FocusRelPosNP, nullptr);
-                FocusAbsPosNP.s = IPS_ALERT;
-                IDSetNumber(&FocusAbsPosNP, nullptr);
-            }
-        }
-        else
-        {
-            //INVALID REPLY
-            LOG_WARN("Communication :FT# error, check connection.");
-            FocusRelPosNP.s = IPS_ALERT;
-            IDSetNumber(&FocusRelPosNP, nullptr);
-            FocusAbsPosNP.s = IPS_ALERT;
-            IDSetNumber(&FocusAbsPosNP, nullptr);
-        }
-        //  :FM#  Get max position (in microns)
-        //         Returns: n#
-        char focus_max[RB_MAX_LEN] = {0};
-        int focus_max_int;
-        int fm_error = getCommandIntResponse(PortFD, &focus_max_int, focus_max, ":FM#");
-        if (fm_error > 0)
-        {
-            FocusAbsPosN[0].max   = focus_max_int;
-            IUUpdateMinMax(&FocusAbsPosNP);
-            IDSetNumber(&FocusAbsPosNP, nullptr);
-            LOGF_DEBUG("focus_max: %s, %i, fm_nbchar: %i", focus_max, focus_max_int, fm_error);
-        }
-        else
-        {
-            LOG_WARN("Communication :FM# error, check connection.");
-            LOGF_WARN("focus_max: %s, %u, fm_error: %i", focus_max, focus_max[0], fm_error);
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        //  :FI#  Get full in position (in microns)
-        //         Returns: n#
-        char focus_min[RB_MAX_LEN] = {0};
-        int focus_min_int ;
-        int fi_error = getCommandIntResponse(PortFD, &focus_min_int, focus_min, ":FI#");
-        if (fi_error > 0)
-        {
-            FocusAbsPosN[0].min =  focus_min_int;
-            IUUpdateMinMax(&FocusAbsPosNP);
-            IDSetNumber(&FocusAbsPosNP, nullptr);
-            LOGF_DEBUG("focus_min: %s, %i fi_nbchar: %i", focus_min, focus_min_int, fi_error);
-        }
-        else
-        {
-            LOG_WARN("Communication :FI# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        
-        // Focus T° Compensation
-        //  :Ft#    Get Focuser Temperature
-        //          Returns: n#
-        char focus_T[RB_MAX_LEN] = {0};
-        int focus_T_int ;
-        int ft_error = getCommandIntResponse(PortFD, &focus_T_int, focus_T, ":Ft#");
-        if (ft_error > 0)
-        {
-            FocuserTN[0].value =  atof(focus_T);
-            IDSetNumber(&FocuserTNP, nullptr);
-            LOGF_DEBUG("focus T°: %s, %i ft_nbcar: %i", focus_T, focus_T_int, ft_error);    //typo
-        }
-        else
-        {
-            LOG_WARN("Communication :Ft# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-
-        //  :Fe#    Get Focus Differential T°
-        //          Returns: n#
-        char focus_TD[RB_MAX_LEN] = {0};
-        int focus_TD_int ;
-        int fe_error = getCommandIntResponse(PortFD, &focus_TD_int, focus_TD, ":Fe#");
-        if (fe_error > 0)
-        {
-            FocuserTN[1].value =  atof(focus_TD);
-            IDSetNumber(&FocuserTNP, nullptr);
-            LOGF_DEBUG("focus Differential T°: %s, %i fi_nbchar: %i", focus_TD, focus_TD_int, fe_error);
-        }
-        else
-        {
-            LOG_WARN("Communication :Fe# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        
-        // :FC#       Get focuser temperature compensation coefficient in microns per °C)
-        //            Return: n.n#
-        char focus_Coeficient[RB_MAX_LEN] = {0};
-        int focus_Coefficient_int ;
-        int fC_error = getCommandIntResponse(PortFD, &focus_Coefficient_int, focus_Coeficient, ":FC#");
-        if (fC_error > 0)
-        {
-            TFCCoefficientN[0].value =  atof(focus_Coeficient);
-            IDSetNumber(&TFCCoefficientNP, nullptr);
-            LOGF_DEBUG("TFC Coefficient: %s, %i fC_nbchar: %i", focus_Coeficient, focus_Coefficient_int, fC_error);
-        }
-        else
-        {
-            LOG_WARN("Communication :FC# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        
-        // :FD#       Get focuser temperature compensation deadband amount (in steps or microns)
-        //            Return: n#
-        char focus_Deadband[RB_MAX_LEN] = {0};
-        int focus_Deadband_int ;
-        int fD_error = getCommandIntResponse(PortFD, &focus_Deadband_int, focus_Deadband, ":FD#");
-        if (fD_error > 0)
-        {
-            TFCDeadbandN[0].value =  focus_Deadband_int;
-            IDSetNumber(&TFCDeadbandNP, nullptr);
-            LOGF_DEBUG("TFC Deadband: %s, %i fD_nbchar: %i", focus_Deadband, focus_Deadband_int, fD_error);
-        }
-        else
-        {
-            LOG_WARN("Communication :FD# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        
-        // :FC#       Get focuser temperature compensation coefficient in microns per °C)
-        //            Return: n.n#
-        char response[RB_MAX_LEN];
-        int res = getCommandSingleCharResponse(PortFD, response, ":Fc#");
-        if (res > 0)
-        {
-            if (strcmp(response,"0"))
-            {
-                TFCCompensationSP.s = IPS_OK;
-                TFCCompensationS[0].s = ISS_OFF;
-                TFCCompensationS[1].s = ISS_ON;
-            }
-            else if (strcmp(response,"1"))
-            {
-                TFCCompensationSP.s = IPS_OK;
-                TFCCompensationS[0].s = ISS_ON;
-                TFCCompensationS[1].s = ISS_OFF;
-            }
-            IDSetSwitch(&TFCCompensationSP, nullptr);
-            LOGF_DEBUG("TFC Enable: fc_nbchar:%d Fc_response: %s", res, response);
-        }
-        else
-        {
-            //LOGF_DEBUG("TFC Enable1: fc_error:%i Fc_response: %s", res, response);
-            LOG_WARN("Communication :Fc# error, check connection.");
-            flushIO(PortFD); //Unlikely to do anything, but just in case.
-        }
-        // End Focus T° Compensation
-
-        FI::updateProperties();
-        LOGF_DEBUG("After update properties: FocusAbsPosN min: %f max: %f", FocusAbsPosN[0].min, FocusAbsPosN[0].max);
-    }
-
-    if(OSFocuser2)
-    {
-        char value[RB_MAX_LEN] = {0};
-        int error_return;
-        //TODO: Check to see if getCommandIntResponse would be better
-        error_return = getCommandSingleCharErrorOrLongResponse(PortFD, value, ":fG#");
-        if (error_return >= 0)
-        {
-            if ( strcmp(value, "0") )
-            {
-                LOG_INFO("Focuser 2 called, but not present, disabling polling");
-                LOGF_DEBUG("OSFocuser2: %d, OSNumFocusers: %i", OSFocuser2, OSNumFocusers);
-                OSFocuser2 = false;
-            }
-            else
-            {
-                OSFocus2TargNP.np[0].value = atoi(value);
-                IDSetNumber(&OSFocus2TargNP, nullptr);
-            }
-        }
-        else
-        {
-            LOGF_INFO("Focuser 2 called, but returned error %i on read, disabling further polling", error_return);
-            LOGF_DEBUG("OSFocuser2: %d, OSNumFocusers: %i", OSFocuser2, OSNumFocusers);
-            OSFocuser2 = false;
-        }
-    }
-
-    if(OSNumFocusers > 1)
-    {
-        char value[RB_MAX_LEN] = {0};
-        int error_or_fail = getCommandSingleCharResponse(PortFD, value, ":Fa#"); //0 = failure, 1 = success, no # on reply
-        if (error_or_fail > 0 && value[0] > '0' && value[0] < '9')
-        {
-            int temp_value = (unsigned int)(value[0]) - '0';
-            LOGF_DEBUG(":Fa# return: %d", temp_value);
-            for (int i = 0; i < 9; i++)
-            {
-                OSFocusSelectS[i].s = ISS_OFF;
-            }
-            if (temp_value == 0)
-            {
-                OSFocusSelectS[1].s = ISS_ON;
-            }
-            else if (temp_value > 9 || temp_value < 0) //TODO: Check if completely redundant
-            {
-                //To solve issue mentioned https://www.indilib.org/forum/development/1406-driver-onstep-lx200-like-for-indi.html?start=624#71572
-                OSFocusSelectSP.s = IPS_ALERT;
-                LOGF_WARN("Active focuser returned out of range: %s, should be 0-9", temp_value);
-                IDSetSwitch(&OSFocusSelectSP, nullptr);
-                return 1;
-            }
-            else
-            {
-                OSFocusSelectS[temp_value - 1].s = ISS_ON;
-            }
-            OSFocusSelectSP.s = IPS_OK;
-            IDSetSwitch(&OSFocusSelectSP, nullptr);
-        }
-        else
-        {
-            LOGF_DEBUG(":Fa# returned outside values: %c, %u", value[0], value[0]);
-        }
-    }
-    return 0;
-}
 
 
 //Rotator stuff

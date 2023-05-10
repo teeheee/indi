@@ -206,13 +206,6 @@ class LX200_OnStep : public LX200Generic, public INDI::WeatherInterface, public 
         // Goto
         virtual bool Goto(double ra, double dec) override;
 
-        //FocuserInterface
-
-        IPState MoveFocuser(FocusDirection dir, int speed, uint16_t duration) override;
-        IPState MoveAbsFocuser (uint32_t targetTicks) override;
-        IPState MoveRelFocuser (FocusDirection dir, uint32_t ticks) override;
-        bool AbortFocuser () override;
-
         //End FocuserInterface
 
         //RotatorInterface
@@ -317,40 +310,6 @@ class LX200_OnStep : public LX200Generic, public INDI::WeatherInterface, public 
 
         bool TMCDrivers = true; //Set to false if it doesn't detect TMC_SPI reporting. (Small delay on connection/first update)
         bool OSHighPrecision = false;
-
-        // Focuser controls
-        // Focuser 1
-        bool OSFocuser1 = false;
-        ISwitchVectorProperty OSFocus1InitializeSP;
-        ISwitch OSFocus1InitializeS[4];
-        
-        // Focus T° Compensation
-        INumberVectorProperty FocuserTNP;
-        INumber FocuserTN[2];
-        ISwitchVectorProperty TFCCompensationSP;
-        ISwitch TFCCompensationS[2];
-        INumberVectorProperty TFCCoefficientNP;
-        INumber TFCCoefficientN[1];
-        INumberVectorProperty TFCDeadbandNP;
-        INumber TFCDeadbandN[1];
-        // End Focus T° Compensation
-
-        int OSNumFocusers = 0;
-        ISwitchVectorProperty OSFocusSelectSP;
-        ISwitch OSFocusSelectS[9];
-
-        // Focuser 2
-        //ISwitchVectorProperty OSFocus2SelSP;
-        //ISwitch OSFocus2SelS[2];
-        bool OSFocuser2 = false;
-        ISwitchVectorProperty OSFocus2RateSP;
-        ISwitch OSFocus2RateS[4];
-
-        ISwitchVectorProperty OSFocus2MotionSP;
-        ISwitch OSFocus2MotionS[3];
-
-        INumberVectorProperty OSFocus2TargNP;
-        INumber OSFocus2TargN[1];
 
         //Rotator - Some handled by RotatorInterface, but that's mostly for rotation only, absolute, and... very limited.
         bool OSRotator1 = false; //Change to false after detection code

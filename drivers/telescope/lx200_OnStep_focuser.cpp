@@ -7,10 +7,11 @@
 
 #define RB_MAX_LEN    64
 
-LX200_OnStep_Focuser::LX200_OnStep_Focuser(int PortFD, int id)
+LX200_OnStep_Focuser::LX200_OnStep_Focuser(int serial_PortFD, int id, int version)
 {
-    PortFD = PortFD;
+    PortFD = serial_PortFD;
     focuser_id = id;
+    onstep_version = version;
     setSupportedConnections(CONNECTION_NONE);
     SetCapability(FOCUSER_CAN_ABS_MOVE | FOCUSER_CAN_REL_MOVE | FOCUSER_CAN_ABORT);
 
@@ -24,6 +25,13 @@ const char * LX200_OnStep_Focuser::getDefaultName()
 bool LX200_OnStep_Focuser::initProperties()
 {
     INDI::Focuser::initProperties();
+    
+    /*defineProperty(&OSFocus1InitializeSP);
+    // Focus T° Compensation
+    defineProperty(&FocuserTNP);
+    defineProperty(&TFCCompensationSP);
+    defineProperty(&TFCCoefficientNP);
+    defineProperty(&TFCDeadbandNP);*/
     setConnected(true, IPS_OK);
     updateProperties();   
     return true;

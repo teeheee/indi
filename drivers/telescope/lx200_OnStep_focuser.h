@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "indifocuser.h"
@@ -6,7 +5,7 @@
 class LX200_OnStep_Focuser : public INDI::Focuser
 {
     public:
-        LX200_OnStep_Focuser(int PortFD, int id);
+        LX200_OnStep_Focuser(int PortFD, int id, int onstep_version);
         virtual const char *getDefaultName() override;
 
     protected:
@@ -26,6 +25,7 @@ class LX200_OnStep_Focuser : public INDI::Focuser
 
         int PortFD;
         int focuser_id;
+        int onstep_version;
         const char* focuser_names[9] = {
             "onstep_focuser_1",
             "onstep_focuser_2",
